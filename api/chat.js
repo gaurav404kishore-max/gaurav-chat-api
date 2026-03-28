@@ -3,8 +3,8 @@ const https = require('https');
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -14,11 +14,6 @@ module.exports = async function(req, res) {
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const messages = body && body.messages ? body.messages : [];
-
-    if (!messages.length) {
-      res.status(400).json({ error: 'No messages provided' });
-      return;
-    }
 
     const SYSTEM_PROMPT = `You are Gaurav Kishore, a Senior Product Manager currently at AB InBev GCC India. Answer in first person, conversationally, like in an interview. Be warm, direct, specific. Keep answers concise.
 
@@ -31,34 +26,32 @@ PROJECTS: NearBy (ATM capability finder), Clear Notes (simple notes app), FitLog
 PERSONAL: From Ranchi, based Bengaluru. Open to Senior PM roles in consumer/growth/AI.
 RULES: First person only. Warm tone. For resume say click "Get my resume" on portfolio.`;
 
-    const geminiContents = messages.map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }]
-    }));
-
     const payload = JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: geminiContents,
-      generationConfig: { maxOutputTokens: 800, temperature: 0.7 }
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...messages
+      ],
+      max_tokens: 800,
+      temperature: 0.7
     });
-
-    const apiKey = process.env.GEMINI_API_KEY;
 
     const result = await new Promise((resolve, reject) => {
       const r = https.request({
-        hostname: 'generativelanguage.googleapis.com',
-        path: `/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,
+        hostname: 'api.groq.com',
+        path: '/openai/v1/chat/completions',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
           'Content-Length': Buffer.byteLength(payload)
         }
       }, (response) => {
         let data = '';
         response.on('data', chunk => data += chunk);
         response.on('end', () => {
-          console.log('Status:', response.statusCode);
-          console.log('Response:', data.slice(0, 200));
+          console.log('Groq status:', response.statusCode);
+          console.log('Groq response:', data.slice(0, 200));
           try { resolve(JSON.parse(data)); }
           catch(e) { reject(new Error(data.slice(0, 100))); }
         });
@@ -68,10 +61,9 @@ RULES: First person only. Warm tone. For resume say click "Get my resume" on por
       r.end();
     });
 
-    const reply = result.candidates?.[0]?.content?.parts?.[0]?.text;
-    console.log('Reply:', reply ? 'OK' : 'EMPTY — ' + JSON.stringify(result).slice(0, 200));
-
-    res.status(200).json({ reply: reply || "Sorry, I couldn't process that." });
+    const reply = result.choices?.[0]?.message?.content;
+    console.log('Reply:', reply ? 'OK' : 'EMPTY');
+    res.status(200).json({ reply: reply || "Sorry, couldn't process that." });
 
   } catch (err) {
     console.log('Error:', err.message);
