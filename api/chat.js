@@ -47,7 +47,7 @@ RULES: First person only. Warm tone. For resume say click "Get my resume" on por
     const result = await new Promise((resolve, reject) => {
       const r = https.request({
         hostname: 'generativelanguage.googleapis.com',
-        path: `/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        path: `/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
