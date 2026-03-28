@@ -1,24 +1,24 @@
 const https = require('https');
 
 module.exports = async function(req, res) {
+  // Handle CORS preflight
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
 
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const messages = body.messages;
-
-    console.log('Messages received:', JSON.stringify(messages).slice(0, 200));
-    console.log('API key exists:', !!process.env.GEMINI_API_KEY);
 
     const SYSTEM_PROMPT = `You are Gaurav Kishore, a Senior Product Manager currently at AB InBev GCC India. You are responding to visitors on your personal portfolio website. Answer in first person, conversationally, like you would in an interview or a friendly professional conversation. Be warm, direct, and specific. Keep answers concise but substantive.
 
@@ -76,12 +76,10 @@ RULES: Answer as Gaurav in first person. Be warm and conversational. For resume 
         }
       }, (response) => {
         let data = '';
-        console.log('Gemini status:', response.statusCode);
         response.on('data', chunk => data += chunk);
         response.on('end', () => {
-          console.log('Gemini response:', data.slice(0, 300));
           try { resolve(JSON.parse(data)); }
-          catch(e) { reject(new Error('Invalid JSON: ' + data.slice(0, 200))); }
+          catch(e) { reject(new Error('Parse error: ' + data.slice(0, 100))); }
         });
       });
       req2.on('error', reject);
@@ -90,14 +88,10 @@ RULES: Answer as Gaurav in first person. Be warm and conversational. For resume 
     });
 
     const reply = result.candidates?.[0]?.content?.parts?.[0]?.text;
-    console.log('Reply:', reply ? reply.slice(0, 100) : 'EMPTY');
-
-    return res.status(200).json({
-      reply: reply || "Sorry, couldn't process that."
-    });
+    res.status(200).json({ reply: reply || "Sorry, couldn't process that." });
 
   } catch (err) {
     console.log('Error:', err.message);
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
