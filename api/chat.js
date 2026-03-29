@@ -56,9 +56,9 @@ Based in Bengaluru. Email: gaurav202kishore@gmail.com. Phone/WhatsApp: +91 94317
 ---
 
 AB INBEV GCC INDIA — Senior Product Manager (Oct 2025 – Present)
-- Led product strategy for GenAI-powered experimentation platform, 1,000+ global users
-- Launched LLM-based test generation and failure diagnostics — experiment time reduced by 70%
-- Built self-serve experiment workflows scaling adoption from 100 to 1,000 users in 3 months
+- Leading product strategy for a GenAI-powered experimentation platform with a growing global user base
+- Launched LLM-based test generation and failure diagnostics — materially reduced experiment time
+- Built self-serve experiment workflows that drove significant adoption growth
 - Partnered with engineering and data teams for experimentation governance and AI evaluation workflows
 
 ---
@@ -115,6 +115,14 @@ PROJECTS
 - NearBy: ATM/petrol/pharmacy finder by capability not just location
 - Clear Notes: Notes app with biometric login and colour-coded reminders
 - FitLog: Fitness tracker with AI cardio parsing
+
+PERSONAL
+- Grew up in Ranchi, Jharkhand — the hills were always close
+- Based in Bengaluru now
+- Drawn to the mountains whenever possible — it's a genuine part of who I am
+- Enjoys building things with his hands (side projects are a hobby, not just a career move)
+- Genuinely excited about AI — not as a buzzword but as a real shift in how products work
+- Direct, honest, prefers substance over polish in conversations
 
 CONTACT
 - Email: gaurav202kishore@gmail.com
